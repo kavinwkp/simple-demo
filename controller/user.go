@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // usersLoginInfo use map to store user info, and key is username+password for demo
@@ -36,8 +37,6 @@ type UserResponse struct {
 func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
-	fmt.Println(username)
-	fmt.Println(password)
 
 	var user User
 	result := DB.Model(&User{}).Where("name=?", username).First(&user)
@@ -51,7 +50,7 @@ func Register(c *gin.Context) {
 		err := DB.Create(&user).Error
 		if err != nil {
 			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{StatusCode: 1, StatusMsg: "mysql save user error"},
+				Response: Response{StatusCode: 1, StatusMsg: "DataBase save user error"},
 			})
 		}
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -66,32 +65,39 @@ func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	token := username + password
+	var user User
 
-	if user, exist := usersLoginInfo[token]; exist {
+	if err := DB.Where("name=?", username).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+			})
+		}
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0},
-			UserId:   user.Id,
-			Token:    token,
-		})
-	} else {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+			Response: Response{StatusCode: 1, StatusMsg: "Database search error"},
 		})
 	}
+
+	token := username + password
+	c.JSON(http.StatusOK, UserLoginResponse{
+		Response: Response{StatusCode: 0},
+		UserId:   user.Id,
+		Token:    token,
+	})
 }
 
 func UserInfo(c *gin.Context) {
-	token := c.Query("token")
-
-	if user, exist := usersLoginInfo[token]; exist {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{StatusCode: 0},
-			User:     user,
-		})
-	} else {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
-		})
+	username := c.Query("username")
+	var user User
+	if err := DB.Where("name=?", username).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusOK, UserResponse{
+				Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+			})
+		}
 	}
+	c.JSON(http.StatusOK, UserResponse{
+		Response: Response{StatusCode: 0},
+		User:     user,
+	})
 }
