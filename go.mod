@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/gin-gonic/gin v1.7.7
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	gopkg.in/ini.v1 v1.66.6
 	gorm.io/driver/mysql v1.3.4
 	gorm.io/gorm v1.23.5

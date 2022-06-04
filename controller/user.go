@@ -31,7 +31,9 @@ type UserLoginResponse struct {
 
 type UserResponse struct {
 	Response
-	User User `json:"user"`
+	// User User `json:"user"`
+	UserId   int64  `json:"user_id,omitempty"`
+	UserName string `json:"user_name"`
 }
 
 func Register(c *gin.Context) {
@@ -47,6 +49,7 @@ func Register(c *gin.Context) {
 	} else {
 		// atomic.AddInt64(&userIdSequence, 1)
 		user.Name = username
+		user.SetPassword(password)
 		err := DB.Create(&user).Error
 		if err != nil {
 			c.JSON(http.StatusOK, UserLoginResponse{
@@ -56,7 +59,6 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0},
 			UserId:   user.Id,
-			Token:    username + password,
 		})
 	}
 }
@@ -73,21 +75,27 @@ func Login(c *gin.Context) {
 				Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 			})
 		}
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "Database search error"},
-		})
+	} else { // 用户名没错就验证密码
+		if user.CheckPassword(password) == false {
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 1, StatusMsg: "Password error"},
+			})
+		} else { // 密码正确，签发token
+			token, _ := GenerateToken(user.Id, user.Name)
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 0},
+				UserId:   user.Id,
+				Token:    token,
+			})
+		}
 	}
 
-	token := username + password
-	c.JSON(http.StatusOK, UserLoginResponse{
-		Response: Response{StatusCode: 0},
-		UserId:   user.Id,
-		Token:    token,
-	})
 }
 
 func UserInfo(c *gin.Context) {
-	username := c.Query("username")
+	token := c.Query("token")
+	claim, _ := ParseToken(token)
+	username := claim.UserName
 	var user User
 	if err := DB.Where("name=?", username).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -98,6 +106,7 @@ func UserInfo(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, UserResponse{
 		Response: Response{StatusCode: 0},
-		User:     user,
+		UserId:   user.Id,
+		UserName: user.Name,
 	})
 }
