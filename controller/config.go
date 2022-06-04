@@ -28,7 +28,7 @@ var (
 var DB *gorm.DB
 
 func InitDB() {
-	file, err := ini.Load("config.ini")
+	file, err := ini.Load("controller/config.ini")
 	if err != nil {
 		fmt.Println("配置文件读取错误")
 		panic(err)

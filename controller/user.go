@@ -1,9 +1,10 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"net/http"
-	"sync/atomic"
+
+	"github.com/gin-gonic/gin"
 )
 
 // usersLoginInfo use map to store user info, and key is username+password for demo
@@ -19,7 +20,7 @@ var usersLoginInfo = map[string]User{
 	},
 }
 
-var userIdSequence = int64(1)
+// var userIdSequence = int64(1)
 
 type UserLoginResponse struct {
 	Response
@@ -35,23 +36,27 @@ type UserResponse struct {
 func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
+	fmt.Println(username)
+	fmt.Println(password)
 
-	token := username + password
-
-	if _, exist := usersLoginInfo[token]; exist {
+	var user User
+	result := DB.Model(&User{}).Where("name=?", username).First(&user)
+	if result.RowsAffected == 1 {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
 		})
 	} else {
-		atomic.AddInt64(&userIdSequence, 1)
-		newUser := User{
-			Id:   userIdSequence,
-			Name: username,
+		// atomic.AddInt64(&userIdSequence, 1)
+		user.Name = username
+		err := DB.Create(&user).Error
+		if err != nil {
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 1, StatusMsg: "mysql save user error"},
+			})
 		}
-		usersLoginInfo[token] = newUser
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0},
-			UserId:   userIdSequence,
+			UserId:   user.Id,
 			Token:    username + password,
 		})
 	}
