@@ -31,9 +31,9 @@ type UserLoginResponse struct {
 
 type UserResponse struct {
 	Response
-	// User User `json:"user"`
-	UserId   int64  `json:"user_id,omitempty"`
-	UserName string `json:"user_name"`
+	User User `json:"user"`
+	// UserId   int64  `json:"user_id,omitempty"`
+	// UserName string `json:"user_name"`
 }
 
 func Register(c *gin.Context) {
@@ -53,12 +53,14 @@ func Register(c *gin.Context) {
 		err := DB.Create(&user).Error
 		if err != nil {
 			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{StatusCode: 1, StatusMsg: "DataBase save user error"},
+				Response: Response{StatusCode: 1, StatusMsg: "DataBase save user failed"},
 			})
 		}
+		token, _ := GenerateToken(user.Id, user.Name)
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0},
 			UserId:   user.Id,
+			Token:    token,
 		})
 	}
 }
@@ -106,7 +108,6 @@ func UserInfo(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, UserResponse{
 		Response: Response{StatusCode: 0},
-		UserId:   user.Id,
-		UserName: user.Name,
+		User:     user,
 	})
 }
