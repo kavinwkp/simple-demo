@@ -18,6 +18,7 @@ var (
 	DbUser     string
 	DbPassWord string
 	DbName     string
+	BaseURL    string
 )
 
 var DB *gorm.DB

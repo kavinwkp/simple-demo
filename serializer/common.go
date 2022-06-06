@@ -18,3 +18,12 @@ type UserResponse struct {
 	Response
 	User model.User `json:"user"`
 }
+
+type PublishResponse struct {
+	Response
+}
+
+type VideoListResponse struct {
+	Response
+	VideoList []model.Video `json:"video_list"`
+}

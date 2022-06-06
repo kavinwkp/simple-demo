@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"mime/multipart"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
 
@@ -42,4 +44,13 @@ func ParseToken(token string) (*Claims, error) {
 		}
 	}
 	return nil, err
+}
+
+func UploadVideo(fileHeader *multipart.FileHeader, path string) error {
+	ctx := &gin.Context{}
+	err := ctx.SaveUploadedFile(fileHeader, path)
+	if err != nil {
+		return err
+	}
+	return nil
 }

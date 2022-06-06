@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/RaymondCode/simple-demo/config"
 	"github.com/RaymondCode/simple-demo/model"
 	"github.com/RaymondCode/simple-demo/serializer"
 	"github.com/gin-gonic/gin"
@@ -20,8 +21,8 @@ func Feed(c *gin.Context) {
 	var videos []model.Video
 	model.DB.Model(&model.Video{}).Order("id desc").Limit(5).Find(&videos)
 	for index := range videos {
-		videos[index].PlayUrl = baseURL + videos[index].PlayUrl
-		videos[index].CoverUrl = baseURL + videos[index].CoverUrl
+		videos[index].PlayUrl = config.BaseURL + videos[index].PlayUrl
+		videos[index].CoverUrl = config.BaseURL + videos[index].CoverUrl
 	}
 	c.JSON(http.StatusOK, FeedResponse{
 		Response:  serializer.Response{StatusCode: 0},
