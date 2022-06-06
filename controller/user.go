@@ -1,12 +1,13 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/RaymondCode/simple-demo/model"
+	"github.com/RaymondCode/simple-demo/service"
+	"github.com/gin-gonic/gin"
 )
 
-// usersLoginInfo use map to store user info, and key is username+password for demo
-// user data will be cleared every time the server starts
-// test data: username=zhanglei, password=douyin
 var usersLoginInfo = map[string]model.User{
 	"zhangleidouyin": {
 		Id:            1,
@@ -15,4 +16,36 @@ var usersLoginInfo = map[string]model.User{
 		FollowerCount: 5,
 		IsFollow:      true,
 	},
+}
+
+func UserRegister(c *gin.Context) {
+	username := c.Query("username")
+	password := c.Query("password")
+	var userRegister = service.UserService{
+		UserName: username,
+		Password: password,
+	}
+	c.JSON(200, userRegister.Register())
+	return
+}
+
+func UserLogin(c *gin.Context) {
+	username := c.Query("username")
+	password := c.Query("password")
+	var userLogin = service.UserService{
+		UserName: username,
+		Password: password,
+	}
+	fmt.Println(userLogin)
+	c.JSON(200, userLogin.Login())
+	return
+}
+
+func UserInfo(c *gin.Context) {
+	token := c.Query("token")
+	var userInfo = service.UserInfoService{
+		Token: token,
+	}
+	c.JSON(200, userInfo.Info())
+	return
 }

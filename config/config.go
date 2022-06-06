@@ -38,6 +38,7 @@ func InitDB() {
 func LoadServer(file *ini.File) {
 	AppMode = file.Section("service").Key("AppMode").String()
 	HttpPort = file.Section("service").Key("HttpPort").String()
+	BaseURL = file.Section("service").Key("BaseURL").String()
 }
 
 func LoadMysql(file *ini.File) {
