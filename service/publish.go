@@ -20,7 +20,8 @@ type PublishService struct {
 }
 
 type PublishListService struct {
-	Token string `json:"token"`
+	Token  string `json:"token"`
+	UserID int64  `json:"user_id"`
 }
 
 func (service *PublishService) Publish() serializer.PublishResponse {
@@ -71,10 +72,8 @@ func (service *PublishService) Publish() serializer.PublishResponse {
 }
 
 func (service *PublishListService) PublishList() serializer.VideoListResponse {
-	claim, _ := utils.ParseToken(service.Token)
-	user_id := claim.Id
 	var videos []model.Video
-	model.DB.Model(&model.Video{}).Where("user_id=?", user_id).Find(&videos)
+	model.DB.Model(&model.Video{}).Where("user_id=?", service.UserID).Find(&videos)
 
 	for index := range videos {
 		videos[index].PlayUrl = config.BaseURL + videos[index].PlayUrl

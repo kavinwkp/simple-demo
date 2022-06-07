@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"strconv"
+
 	"github.com/RaymondCode/simple-demo/serializer"
 	"github.com/RaymondCode/simple-demo/service"
 	"github.com/gin-gonic/gin"
@@ -28,8 +30,10 @@ func Publish(c *gin.Context) {
 
 func PublishList(c *gin.Context) {
 	token := c.Query("token")
+	user_id, _ := strconv.ParseInt(c.Query("user_id"), 10, 64)
 	var publishListServer = service.PublishListService{
-		Token: token,
+		Token:  token,
+		UserID: user_id,
 	}
 	c.JSON(200, publishListServer.PublishList())
 	return

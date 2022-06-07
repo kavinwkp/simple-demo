@@ -34,8 +34,15 @@ func CommentAction(c *gin.Context) {
 
 // CommentList all videos have same demo comment list
 func CommentList(c *gin.Context) {
-	c.JSON(http.StatusOK, serializer.CommentListResponse{
-		Response:    serializer.Response{StatusCode: 0},
-		CommentList: DemoComments,
-	})
+	token := c.Query("token")
+	video_id, _ := strconv.ParseInt(c.Query("video_id"), 10, 64)
+	var commentServer = service.CommentService{
+		Token:   token,
+		VideoID: video_id,
+	}
+	c.JSON(200, commentServer.CommentList())
+	// c.JSON(http.StatusOK, serializer.CommentListResponse{
+	// 	Response:    serializer.Response{StatusCode: 0},
+	// 	CommentList: DemoComments,
+	// })
 }
