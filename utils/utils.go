@@ -11,7 +11,7 @@ import (
 var JWTsecret = []byte("ABAB")
 
 type Claims struct {
-	Id       int64  `json:"id"`
+	UserId   int64  `json:"id"`
 	UserName string `json:"user_name"`
 	jwt.StandardClaims
 }
@@ -21,11 +21,11 @@ func GenerateToken(id int64, username string) (string, error) {
 	notTime := time.Now()
 	expireTime := notTime.Add(24 * time.Hour)
 	claims := Claims{
-		Id:       id,
+		UserId:   id,
 		UserName: username,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(),
-			Issuer:    "todo_list",
+			Issuer:    "douyin",
 		},
 	}
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

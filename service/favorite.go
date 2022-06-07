@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"fmt"
 
+	"github.com/RaymondCode/simple-demo/config"
 	"github.com/RaymondCode/simple-demo/model"
 	"github.com/RaymondCode/simple-demo/serializer"
 	"github.com/RaymondCode/simple-demo/utils"
@@ -15,11 +15,16 @@ type FavoriteActionService struct {
 	VideoId int64
 }
 
+type FavoriteListService struct {
+	Token  string
+	UserId int64
+}
+
 func (service *FavoriteActionService) FavoriteAction() serializer.FavoriteActionResponse {
-	fmt.Println("favorite action")
+
 	claim, _ := utils.ParseToken(service.Token)
 	video_id := service.VideoId
-	user_id := claim.Id
+	user_id := claim.UserId
 
 	var favorite model.Favorite
 
@@ -35,7 +40,6 @@ func (service *FavoriteActionService) FavoriteAction() serializer.FavoriteAction
 	// 没点过赞就新增一条记录
 	favorite.UserID = user_id
 	favorite.VideoId = video_id
-	fmt.Println(favorite)
 
 	err := model.DB.Create(&favorite).Error
 	if err != nil {
@@ -81,5 +85,26 @@ func (service *FavoriteActionService) FavoriteCancleAction() serializer.Favorite
 			StatusCode: 0,
 			StatusMsg:  "Cancle favorite successfully",
 		},
+	}
+}
+
+func (service *FavoriteListService) FavoriteList() serializer.VideoListResponse {
+	var favorites []model.Favorite
+	model.DB.Model(&model.Favorite{}).Where("user_id=?", service.UserId).Find(&favorites)
+	var video_ids []int64
+	for _, v := range favorites {
+		video_ids = append(video_ids, v.VideoId)
+	}
+	var videos []model.Video
+	model.DB.Find(&videos, video_ids)
+	for index := range videos {
+		videos[index].PlayUrl = config.BaseURL + videos[index].PlayUrl
+		videos[index].CoverUrl = config.BaseURL + videos[index].CoverUrl
+	}
+	return serializer.VideoListResponse{
+		Response: serializer.Response{
+			StatusCode: 0,
+		},
+		VideoList: videos,
 	}
 }

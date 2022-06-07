@@ -31,8 +31,7 @@ func (service *UserService) Register() serializer.Response {
 	// atomic.AddInt64(&userIdSequence, 1)
 	user.Name = service.UserName
 	user.SetPassword(service.Password)
-	err := model.DB.Create(&user).Error
-	if err != nil {
+	if err := model.DB.Create(&user).Error; err != nil {
 		return serializer.Response{
 			StatusCode: 1,
 			StatusMsg:  "DataBase save user failed",

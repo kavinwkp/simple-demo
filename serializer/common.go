@@ -37,3 +37,17 @@ type FeedResponse struct {
 type FavoriteActionResponse struct {
 	Response
 }
+
+type CommentListResponse struct {
+	Response
+	CommentList []model.CommentResponse `json:"comment_list,omitempty"`
+}
+
+type CommentActionResponse struct {
+	Response
+	CommentResponse model.CommentResponse `json:"comment,omitempty"`
+}
+
+type CommentCancleResponse struct {
+	Response
+}

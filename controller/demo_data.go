@@ -16,7 +16,7 @@ var DemoVideos = []model.Video{
 	},
 }
 
-var DemoComments = []Comment{
+var DemoComments = []model.CommentResponse{
 	{
 		Id:         1,
 		User:       DemoUser,

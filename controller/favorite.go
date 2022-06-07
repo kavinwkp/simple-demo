@@ -1,10 +1,8 @@
 package controller
 
 import (
-	"net/http"
 	"strconv"
 
-	"github.com/RaymondCode/simple-demo/serializer"
 	"github.com/RaymondCode/simple-demo/service"
 	"github.com/gin-gonic/gin"
 )
@@ -29,10 +27,11 @@ func FavoriteAction(c *gin.Context) {
 
 // FavoriteList all users have same favorite video list
 func FavoriteList(c *gin.Context) {
-	c.JSON(http.StatusOK, serializer.VideoListResponse{
-		Response: serializer.Response{
-			StatusCode: 0,
-		},
-		VideoList: DemoVideos,
-	})
+	token := c.Query("token")
+	user_id, _ := strconv.ParseInt(c.Query("user_id"), 10, 64) // string to int64
+	var favoriteListServer = service.FavoriteListService{
+		Token:  token,
+		UserId: user_id,
+	}
+	c.JSON(200, favoriteListServer.FavoriteList())
 }

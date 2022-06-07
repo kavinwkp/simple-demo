@@ -2,47 +2,39 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/RaymondCode/simple-demo/serializer"
+	"github.com/RaymondCode/simple-demo/service"
 	"github.com/gin-gonic/gin"
 )
-
-type CommentListResponse struct {
-	serializer.Response
-	CommentList []Comment `json:"comment_list,omitempty"`
-}
-
-type CommentActionResponse struct {
-	serializer.Response
-	Comment Comment `json:"comment,omitempty"`
-}
 
 // CommentAction no practical effect, just check if token is valid
 func CommentAction(c *gin.Context) {
 	token := c.Query("token")
-	actionType := c.Query("action_type")
-
-	if user, exist := usersLoginInfo[token]; exist {
-		if actionType == "1" {
-			text := c.Query("comment_text")
-			c.JSON(http.StatusOK, CommentActionResponse{Response: serializer.Response{StatusCode: 0},
-				Comment: Comment{
-					Id:         1,
-					User:       user,
-					Content:    text,
-					CreateDate: "05-01",
-				}})
-			return
-		}
-		c.JSON(http.StatusOK, serializer.Response{StatusCode: 0})
-	} else {
-		c.JSON(http.StatusOK, serializer.Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+	video_id, _ := strconv.ParseInt(c.Query("video_id"), 10, 64)
+	action_type := c.Query("action_type")
+	content := c.Query("comment_text")
+	var commentServer = service.CommentService{
+		Token:   token,
+		VideoID: video_id,
+		Content: content,
+	}
+	switch action_type {
+	case "1":
+		c.JSON(200, commentServer.Comment())
+	case "2":
+		comment_id, _ := strconv.ParseInt(c.Query("comment_id"), 10, 64)
+		commentServer.CommentID = comment_id
+		c.JSON(200, commentServer.CommentCancle())
+	default:
+		c.JSON(http.StatusOK, serializer.Response{StatusCode: 1, StatusMsg: "Action_Type error"})
 	}
 }
 
 // CommentList all videos have same demo comment list
 func CommentList(c *gin.Context) {
-	c.JSON(http.StatusOK, CommentListResponse{
+	c.JSON(http.StatusOK, serializer.CommentListResponse{
 		Response:    serializer.Response{StatusCode: 0},
 		CommentList: DemoComments,
 	})
