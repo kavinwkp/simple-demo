@@ -33,3 +33,7 @@ type FeedResponse struct {
 	VideoList []model.Video `json:"video_list,omitempty"`
 	NextTime  int64         `json:"next_time,omitempty"`
 }
+
+type FavoriteActionResponse struct {
+	Response
+}

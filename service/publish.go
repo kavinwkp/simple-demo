@@ -49,7 +49,6 @@ func (service *PublishService) Publish() serializer.PublishResponse {
 	// 视频保存成功就在Video表中插入视记录
 	var video = model.Video{
 		UserID:        user.Id,
-		User:          user,
 		Title:         service.Title,
 		PlayUrl:       finalName,
 		CoverUrl:      "cover.png",
@@ -75,7 +74,7 @@ func (service *PublishListService) PublishList() serializer.VideoListResponse {
 	claim, _ := utils.ParseToken(service.Token)
 	user_id := claim.Id
 	var videos []model.Video
-	model.DB.Model(&model.Video{}).Preload("User").Where("user_id=?", user_id).Find(&videos)
+	model.DB.Model(&model.Video{}).Where("user_id=?", user_id).Find(&videos)
 
 	for index := range videos {
 		videos[index].PlayUrl = config.BaseURL + videos[index].PlayUrl

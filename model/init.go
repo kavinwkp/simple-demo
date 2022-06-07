@@ -18,9 +18,9 @@ func Database(connstring string) {
 	dblogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
-			SlowThreshold: time.Second,   // 慢 SQL 阈值
-			LogLevel:      logger.Silent, // Log level
-			Colorful:      true,          // 彩色打印
+			SlowThreshold: time.Second, // 慢 SQL 阈值
+			LogLevel:      logger.Info, // Log level
+			Colorful:      true,        // 彩色打印
 		},
 	)
 
@@ -51,5 +51,5 @@ func Database(connstring string) {
 
 func migration() {
 	// 自动迁移模式
-	DB.Set("gorm:table_options", "charset=utf8mb4").AutoMigrate(&User{})
+	DB.Set("gorm:table_options", "charset=utf8mb4").AutoMigrate(&User{}, &Video{}, &Favorite{})
 }

@@ -4,8 +4,8 @@ import "github.com/RaymondCode/simple-demo/model"
 
 var DemoVideos = []model.Video{
 	{
-		Id:   1,
-		User: DemoUser,
+		Id:     1,
+		UserID: DemoUser.Id,
 		// PlayUrl:       "https://www.w3schools.com/html/movie.mp4",
 		// CoverUrl:      "https://cdn.pixabay.com/photo/2016/03/27/18/10/bear-1283347_1280.jpg",
 		PlayUrl:       "http://10.37.62.58:8080/static/bear.mp4",
