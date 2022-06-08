@@ -48,7 +48,7 @@ func (service *PublishService) Publish() serializer.PublishResponse {
 		}
 	}
 	// 视频保存成功就在Video表中插入视记录
-	var video = model.Video{
+	var video = model.VideoTable{
 		UserID:        user.Id,
 		Title:         service.Title,
 		PlayUrl:       finalName,
@@ -57,8 +57,7 @@ func (service *PublishService) Publish() serializer.PublishResponse {
 		CommentCount:  0,
 		IsFavorite:    false,
 	}
-	err := model.DB.Create(&video).Error
-	if err != nil {
+	if err := model.DB.Create(&video).Error; err != nil {
 		return serializer.PublishResponse{
 			Response: serializer.Response{StatusCode: 1, StatusMsg: "Database save video failed"},
 		}
@@ -72,12 +71,35 @@ func (service *PublishService) Publish() serializer.PublishResponse {
 }
 
 func (service *PublishListService) PublishList() serializer.VideoListResponse {
-	var videos []model.Video
-	model.DB.Model(&model.Video{}).Where("user_id=?", service.UserID).Find(&videos)
+	var videosTable []model.VideoTable
+	if err := model.DB.Where("user_id=?", service.UserID).Find(&videosTable).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return serializer.VideoListResponse{
+				Response: serializer.Response{
+					StatusCode: 0,
+				},
+				VideoList: []model.Video{},
+			}
+		}
+	}
 
-	for index := range videos {
-		videos[index].PlayUrl = config.BaseURL + videos[index].PlayUrl
-		videos[index].CoverUrl = config.BaseURL + videos[index].CoverUrl
+	var videos []model.Video
+
+	var user model.User
+	model.DB.First(&user, videosTable[0].UserID)
+
+	for _, v := range videosTable {
+		var video = model.Video{
+			Id:            v.Id,
+			Title:         v.Title,
+			Author:        user,
+			PlayUrl:       config.BaseURL + v.PlayUrl,
+			CoverUrl:      config.BaseURL + v.CoverUrl,
+			FavoriteCount: v.FavoriteCount,
+			CommentCount:  v.CommentCount,
+			IsFavorite:    v.IsFavorite,
+		}
+		videos = append(videos, video)
 	}
 
 	return serializer.VideoListResponse{

@@ -28,7 +28,7 @@ func (service *FavoriteActionService) FavoriteAction() serializer.FavoriteAction
 
 	var favorite model.Favorite
 
-	result := model.DB.Model(&model.Favorite{}).Where("user_id=? AND video_id=?", user_id, video_id).First(&favorite)
+	result := model.DB.Where("user_id=? AND video_id=?", user_id, video_id).First(&favorite)
 	if result.RowsAffected == 1 {
 		return serializer.FavoriteActionResponse{
 			Response: serializer.Response{
@@ -69,7 +69,7 @@ func (service *FavoriteActionService) FavoriteCancleAction() serializer.Favorite
 
 	var favorite model.Favorite
 
-	if err := model.DB.Model(&model.Favorite{}).Where("user_id=? AND video_id=?", user_id, video_id).First(&favorite).Error; err != nil {
+	if err := model.DB.Where("user_id=? AND video_id=?", user_id, video_id).First(&favorite).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return serializer.FavoriteActionResponse{
 				Response: serializer.Response{StatusCode: 1, StatusMsg: "Not favorite"},
@@ -90,17 +90,32 @@ func (service *FavoriteActionService) FavoriteCancleAction() serializer.Favorite
 
 func (service *FavoriteListService) FavoriteList() serializer.VideoListResponse {
 	var favorites []model.Favorite
-	model.DB.Model(&model.Favorite{}).Where("user_id=?", service.UserId).Find(&favorites)
+	model.DB.Where("user_id=?", service.UserId).Find(&favorites)
 	var video_ids []int64
 	for _, v := range favorites {
 		video_ids = append(video_ids, v.VideoId)
 	}
+
+	var videosTable []model.VideoTable
+	model.DB.Find(&videosTable, video_ids)
+
 	var videos []model.Video
-	model.DB.Find(&videos, video_ids)
-	for index := range videos {
-		videos[index].PlayUrl = config.BaseURL + videos[index].PlayUrl
-		videos[index].CoverUrl = config.BaseURL + videos[index].CoverUrl
+	for _, v := range videosTable {
+		var user model.User
+		model.DB.First(&user, v.UserID)
+		var video = model.Video{
+			Id:            v.Id,
+			Title:         v.Title,
+			Author:        user,
+			PlayUrl:       config.BaseURL + v.PlayUrl,
+			CoverUrl:      config.BaseURL + v.CoverUrl,
+			FavoriteCount: v.FavoriteCount,
+			CommentCount:  v.CommentCount,
+			IsFavorite:    v.IsFavorite,
+		}
+		videos = append(videos, video)
 	}
+
 	return serializer.VideoListResponse{
 		Response: serializer.Response{
 			StatusCode: 0,

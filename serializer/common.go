@@ -51,3 +51,17 @@ type CommentActionResponse struct {
 type CommentCancleResponse struct {
 	Response
 }
+
+type FollowActionResponse struct {
+	Response
+}
+
+type FollowListResponse struct {
+	Response
+	UserList []model.User `json:"user_list"`
+}
+
+type FollowerListResponse struct {
+	Response
+	UserList []model.User `json:"user_list"`
+}

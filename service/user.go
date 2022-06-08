@@ -20,8 +20,8 @@ type UserInfoService struct {
 
 func (service *UserService) Register() serializer.Response {
 
-	var user model.User
-	result := model.DB.Model(&model.User{}).Where("name=?", service.UserName).First(&user)
+	var user model.UserPassword
+	result := model.DB.Where("name=?", service.UserName).First(&user)
 	if result.RowsAffected == 1 {
 		return serializer.Response{
 			StatusCode: 1,
@@ -37,6 +37,12 @@ func (service *UserService) Register() serializer.Response {
 			StatusMsg:  "DataBase save user failed",
 		}
 	}
+	model.DB.Create(&model.User{
+		Name:          user.Name,
+		FollowCount:   0,
+		FollowerCount: 0,
+		IsFollow:      false,
+	})
 	return serializer.Response{
 		StatusCode: 0,
 		StatusMsg:  "register successfully",
@@ -44,7 +50,7 @@ func (service *UserService) Register() serializer.Response {
 }
 
 func (service *UserService) Login() serializer.UserLoginResponse {
-	var user model.User
+	var user model.UserPassword
 
 	if err := model.DB.Where("name=?", service.UserName).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
