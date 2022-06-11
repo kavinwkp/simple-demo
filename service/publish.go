@@ -28,8 +28,8 @@ func (service *PublishService) Publish() serializer.PublishResponse {
 	claim, _ := utils.ParseToken(service.Token)
 
 	var user model.User
-	username := claim.UserName
-	if err := model.DB.Where("name=?", username).First(&user).Error; err != nil {
+	user.Id = claim.UserId
+	if err := model.DB.First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return serializer.PublishResponse{
 				Response: serializer.Response{StatusCode: 1, StatusMsg: "User doesn't exist"},

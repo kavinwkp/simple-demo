@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/RaymondCode/simple-demo/model"
 	"github.com/RaymondCode/simple-demo/service"
@@ -43,8 +44,10 @@ func UserLogin(c *gin.Context) {
 
 func UserInfo(c *gin.Context) {
 	token := c.Query("token")
+	user_id, _ := strconv.ParseInt(c.Query("user_id"), 10, 64)
 	var userInfo = service.UserInfoService{
-		Token: token,
+		Token:  token,
+		UserID: user_id,
 	}
 	c.JSON(200, userInfo.Info())
 	return

@@ -15,7 +15,8 @@ type UserService struct {
 }
 
 type UserInfoService struct {
-	Token string `form:"token" json:"token"`
+	Token  string `form:"token" json:"token"`
+	UserID int64  `form:"user_id" json:"user_id"`
 }
 
 func (service *UserService) Register() serializer.Response {
@@ -76,10 +77,8 @@ func (service *UserService) Login() serializer.UserLoginResponse {
 }
 
 func (service *UserInfoService) Info() serializer.UserResponse {
-	claim, _ := utils.ParseToken(service.Token)
-	username := claim.UserName
 	var user model.User
-	if err := model.DB.Where("name=?", username).First(&user).Error; err != nil {
+	if err := model.DB.Where("id=?", service.UserID).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return serializer.UserResponse{
 				Response: serializer.Response{StatusCode: 1, StatusMsg: "User doesn't exist"},

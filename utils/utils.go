@@ -19,7 +19,7 @@ type Claims struct {
 // 签发token
 func GenerateToken(id int64, username string) (string, error) {
 	notTime := time.Now()
-	expireTime := notTime.Add(24 * time.Hour)
+	expireTime := notTime.Add(24 * time.Hour) // 24小时后过期
 	claims := Claims{
 		UserId:   id,
 		UserName: username,
